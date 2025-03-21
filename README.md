@@ -26,3 +26,4 @@ Negative current and power values mean that the battery is getting drained, posi
 
 There is also a rudimentary Android project which shows all of these values and some derived ones on your phone/tablet.
 
+![Circuit](circuit.png "Circuit")
