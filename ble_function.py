@@ -3,6 +3,16 @@ from machine import Pin
 import bluetooth
 from ble_advertising import advertising_payload
 
+LED_PIN = 2
+LED_ON = 1
+LED_OFF = 0
+try:
+    from machine import TouchPad
+except ImportError:
+    # ESP32-C3 is different
+    LED_PIN = 8
+    LED_ON = 0
+    LED_OFF = 1
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
@@ -16,7 +26,7 @@ FLAG_INDICATE = const(0x0020)
 # org.bluetooth.characteristic.gap.appearance.xml
 _ADV_APPEARANCE_GENERIC_COMPUTER = const(128)
 
-led_pin = Pin(2, Pin.OUT, value=0, drive=Pin.DRIVE_1)
+led_pin = Pin(LED_PIN, Pin.OUT, value=LED_OFF, drive=Pin.DRIVE_1)
 
 class BLEFunction:
     def __init__(self, name, ble_service):
@@ -36,14 +46,14 @@ class BLEFunction:
         if event == _IRQ_CENTRAL_CONNECT:
             conn_handle, _, _ = data
             self._connections.add(conn_handle)
-            led_pin.value(1)
+            led_pin.value(LED_ON)
             print("connected")
         elif event == _IRQ_CENTRAL_DISCONNECT:
             conn_handle, _, _ = data
             self._connections.remove(conn_handle)
             # Start advertising again to allow a new connection.
             self._advertise()
-            led_pin.value(0)
+            led_pin.value(LED_OFF)
             print("disconnected")
         elif event == _IRQ_GATTS_INDICATE_DONE:
             conn_handle, value_handle, status = data
