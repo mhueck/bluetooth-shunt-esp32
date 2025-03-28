@@ -135,7 +135,7 @@ while True:
             wh_last_d = 0.0
         print(f"Current: {curr1}, voltage: {volt1}, AS: {status["capacity_AS"]}, WH H: {wh_last_h}, WH D: {wh_last_d}")
         data = struct.pack("<h", int(volt1 * 100)) + struct.pack("<h", int(curr1 * 100)) + struct.pack("<h", int(
-            status["capacity_AS"] * 100 / 60 / 60)) + struct.pack("<h", int(wh_last_h * 10)) + struct.pack("<h", int(wh_last_d))
+            status["capacity_AS"] * 100 / 60 / 60)) + struct.pack("<h", int(wh_last_h * 10)) + struct.pack("<h", int(wh_last_d)) + struct.pack("<h", int(MAX_CAPACITY_AS * 100 / 60 / 60))
         temp.set_data(data, notify=True, indicate=False)
 
         # write only every 5 minutes
