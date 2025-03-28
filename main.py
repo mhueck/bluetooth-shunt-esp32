@@ -3,7 +3,7 @@
 # The sensor's local value updates every second, and it will notify
 # any connected central every 10 seconds.
 
-from machine import SoftI2C, Pin, Timer, WDT
+from machine import I2C, SoftI2C, Pin, Timer, WDT
 import machine
 import esp32
 import ujson
@@ -68,8 +68,8 @@ temp = ble_function.BLEFunction(
 if MODE == "ina3221":
     from ina3221 import *
     i2c = SoftI2C(scl=Pin(18), sda=Pin(19), freq=400000)
-    ina3221 = INA3221(i2c, shunt_resistor=(SHUNT_RESISTOR, 0.1, 0.1))
-    ina3221.update(reg=C_REG_CONFIG,
+    ina = INA3221(i2c, shunt_resistor=(SHUNT_RESISTOR, 0.1, 0.1))
+    ina.update(reg=C_REG_CONFIG,
                    mask=C_AVERAGING_MASK |
                    C_VBUS_CONV_TIME_MASK |
                    C_SHUNT_CONV_TIME_MASK |
@@ -78,12 +78,13 @@ if MODE == "ina3221":
                    C_VBUS_CONV_TIME_4MS |
                    C_SHUNT_CONV_TIME_4MS |
                    C_MODE_SHUNT_AND_BUS_CONTINOUS)
-    ina3221.enable_channel(1)
+    ina.enable_channel(1)
     print("INA3221 configured.")
 elif MODE == "ina226":
     import ina226_jcf as ina226      
-    i2c = SoftI2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
+    i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
     ina = ina226.INA226(i2c, 0x40, Rs = SHUNT_RESISTOR, voltfactor = 1)
+    print("INA226 configured.")
 else:
     print("running in dummy mode.")
 
@@ -97,12 +98,12 @@ loop_start = 0
 touch_values = deque([], 20)
 while True:
 
-    if MODE != "ina3221" or ina3221.is_ready:
+    if MODE != "ina3221" or ina.is_ready:
         wdt.feed()
         loop_start = time.ticks_ms()
         if MODE == "ina3221":
-            curr1 = ina3221.current(1)
-            volt1 = ina3221.bus_voltage(1)
+            curr1 = ina.current(1)
+            volt1 = ina.bus_voltage(1)
         elif MODE == "ina226":
             volt1, curr1, _ = ina.get_VIP()
         else:
